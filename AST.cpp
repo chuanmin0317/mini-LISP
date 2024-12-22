@@ -1,7 +1,7 @@
 #include "AST.h"
 
 stack<AST_Node*> global_param_stk;
-string getASTTypeName(ASType type);
+
 AST_Node* creatNode(AST_Node* expr1, AST_Node* expr2){
     AST_Node* node = new AST_Node;
     node->type = type_stack.top();
