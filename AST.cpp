@@ -180,7 +180,6 @@ ASTValue* function(AST_Node* fun_expr, AST_Node* params, map<string, AST_Node*> 
     if (!params){
         if (!global_param_stk.empty()){
             while(fun_id){
-                cout << ((ASTID*)fun_id->left)->id << endl;
                 id_stk.push(((ASTID*)fun_id->left)->id);
                 fun_id = fun_id->right;
             }
