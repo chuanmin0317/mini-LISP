@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # 設定檔案名稱
-LEX_FILE="Mini_LISP.l"      # Lex 檔案名稱
-YACC_FILE="Mini_LISP.y"     # Yacc 檔案名稱
-OUTPUT="Mini_LISP"          # 最後的執行檔名稱
+LEX_FILE="scanner.l"      # Lex 檔案名稱
+YACC_FILE="intepreter.y"     # Yacc 檔案名稱
+OUTPUT="intepreter"          # 最後的執行檔名稱
 
 # Step 1: 檢查檔案是否存在
 if [ ! -f "$LEX_FILE" ]; then
