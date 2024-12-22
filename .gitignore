@@ -1,0 +1,7 @@
+*
+!AST.cpp
+!AST.h
+!build.sh
+!interpreter.y
+!scanner.l
+!public_test_data/
