@@ -24,6 +24,51 @@ AST_Node* creatNode(AST_Node* expr1, AST_Node* expr2, AST_Node* expr3){
     return node;
 }
 
+string getASTTypeName(ASType type) {
+    switch (type) {
+        case ROOT: return "ROOT";
+        case PRINT_NUM: return "PRINT_NUM";
+        case PRINT_BOOL: return "PRINT_BOOL";
+        case BOOLVAL: return "BOOLVAL";
+        case NUMBER: return "NUMBER";
+        case ID: return "ID";
+        case PLUS: return "PLUS";
+        case MINUS: return "MINUS";
+        case MULTIPLY: return "MULTIPLY";
+        case DIVIDE: return "DIVIDE";
+        case MODULUS: return "MODULUS";
+        case SMALLER: return "SMALLER";
+        case GREATER: return "GREATER";
+        case EQUAL: return "EQUAL";
+        case AND: return "AND";
+        case OR: return "OR";
+        case NOT: return "NOT";
+        case IF: return "IF";
+        case FUN: return "FUN";
+        case FUN_DEF_CALL: return "FUN_DEF_CALL";
+        case FUN_CALL: return "FUN_CALL";
+        case FUN_BODY: return "FUN_BODY";
+        case DEFINE: return "DEFINE";
+        default: return "UNKNOWN";
+    }
+}
+
+void printAST(AST_Node* node, const string& label, int depth) {
+    for (int i = 0; i < depth; ++i) {
+        cout << "  ";
+    }
+
+    if (!node) {
+        cout << label << ": nullptr" << endl; 
+        return;
+    }
+
+    cout << label << ": " << getASTTypeName(node->type) << endl;
+
+    printAST(node->left, "LEFT", depth + 1);
+    printAST(node->right, "RIGHT", depth + 1);
+}
+
 int calNumber(AST_Node* current, map<string, AST_Node*> &local_var_map){
     if (!current) return 1;
     int result;
@@ -343,47 +388,3 @@ ASTValue* Traversal(AST_Node* current, map<string, AST_Node*> &local_var_map){
     return result;
 }
 
-string getASTTypeName(ASType type) {
-    switch (type) {
-        case ROOT: return "ROOT";
-        case PRINT_NUM: return "PRINT_NUM";
-        case PRINT_BOOL: return "PRINT_BOOL";
-        case BOOLVAL: return "BOOLVAL";
-        case NUMBER: return "NUMBER";
-        case ID: return "ID";
-        case PLUS: return "PLUS";
-        case MINUS: return "MINUS";
-        case MULTIPLY: return "MULTIPLY";
-        case DIVIDE: return "DIVIDE";
-        case MODULUS: return "MODULUS";
-        case SMALLER: return "SMALLER";
-        case GREATER: return "GREATER";
-        case EQUAL: return "EQUAL";
-        case AND: return "AND";
-        case OR: return "OR";
-        case NOT: return "NOT";
-        case IF: return "IF";
-        case FUN: return "FUN";
-        case FUN_DEF_CALL: return "FUN_DEF_CALL";
-        case FUN_CALL: return "FUN_CALL";
-        case FUN_BODY: return "FUN_BODY";
-        case DEFINE: return "DEFINE";
-        default: return "UNKNOWN";
-    }
-}
-
-void printAST(AST_Node* node, const string& label, int depth) {
-    for (int i = 0; i < depth; ++i) {
-        cout << "  ";
-    }
-
-    if (!node) {
-        cout << label << ": nullptr" << endl; 
-        return;
-    }
-
-    cout << label << ": " << getASTTypeName(node->type) << endl;
-
-    printAST(node->left, "LEFT", depth + 1);
-    printAST(node->right, "RIGHT", depth + 1);
-}
