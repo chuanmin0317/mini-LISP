@@ -4,6 +4,9 @@
 LEX_FILE="scanner.l"      # Lex 檔案名稱
 YACC_FILE="intepreter.y"     # Yacc 檔案名稱
 OUTPUT="intepreter"          # 最後的執行檔名稱
+# 定義執行檔與測試資料夾
+EXECUTABLE="./intepreter"
+TEST_DIR="./public_test_data"
 
 # Step 1: 檢查檔案是否存在
 if [ ! -f "$LEX_FILE" ]; then
@@ -62,3 +65,28 @@ fi
 
 # 完成
 echo "Compilation completed successfully! Executable is '$OUTPUT'."
+
+# 檢查執行檔是否存在
+if [ ! -f "$EXECUTABLE" ]; then
+    echo "Error: Executable '$EXECUTABLE' not found."
+    exit 1
+fi
+
+# 檢查測試資料夾是否存在
+if [ ! -d "$TEST_DIR" ]; then
+    echo "Error: Test directory '$TEST_DIR' not found."
+    exit 1
+fi
+
+# 建立輸出資料夾
+mkdir -p "$OUTPUT_DIR"
+
+# 遍歷所有 .lsp 檔案
+for file in "$TEST_DIR"/*.lsp; do
+    # 取得檔案名稱（不含路徑）
+    filename=$(basename "$file")
+    
+    # 執行執行檔並將結果寫入輸出檔案
+    echo "Running test: $filename"
+    "$EXECUTABLE" < "$file"
+done
