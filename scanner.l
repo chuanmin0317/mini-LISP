@@ -69,7 +69,7 @@
 }
 
 "print-bool" {
-    type_stack.push(PRINT_NUM);
+    type_stack.push(PRINT_BOOL);
     return printbool;
 }
 
