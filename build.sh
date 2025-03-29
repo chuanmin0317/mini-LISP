@@ -2,10 +2,10 @@
 
 # 設定檔案名稱
 LEX_FILE="scanner.l"      # Lex 檔案名稱
-YACC_FILE="intepreter.y"     # Yacc 檔案名稱
-OUTPUT="intepreter"          # 最後的執行檔名稱
+YACC_FILE="interpreter.y"     # Yacc 檔案名稱
+OUTPUT="interpreter"          # 最後的執行檔名稱
 # 定義執行檔與測試資料夾
-EXECUTABLE="./intepreter"
+EXECUTABLE="./interpreter"
 TEST_DIR="./public_test_data"
 
 # Step 1: 檢查檔案是否存在
