@@ -57,6 +57,19 @@ After running `build.sh`, you can run the interpreter directly:
 ```bash
 ./interpreter
 ```
+## Example Interaction
+```
+> (print-num(+ 1 2))
+3
+> (define x 10)
+> (print-num (* x 5))
+50
+> (define square (fun (n) (* n n)))
+> (print-num (square 7))
+49
+> (print-bool (if (< x 5) #t #f))
+#f
+```
 ## Known Issues & Limitations
 * **Memory Management:** The current C++ implementation uses manual new for AST nodes and strdup for identifiers without corresponding delete or free calls. This leads to memory leaks.
 
