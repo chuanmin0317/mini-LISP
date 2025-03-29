@@ -78,7 +78,7 @@ After running `build.sh`, you can run the interpreter directly:
 
 * **Implement Garbage Collection:** (Advanced) Introduce a garbage collector for more robust memory management, especially for closures and lists.
 
-* ****File Input:** Allow the interpreter to read and execute code from a .lisp file.
+* **File Input:** Allow the interpreter to read and execute code from a .lisp file.
 
 * **Expand Standard Library:** Add more built-in functions.
 
