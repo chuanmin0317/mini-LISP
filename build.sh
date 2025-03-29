@@ -1,92 +1,96 @@
 #!/bin/bash
 
-# 設定檔案名稱
-LEX_FILE="scanner.l"      # Lex 檔案名稱
-YACC_FILE="interpreter.y"     # Yacc 檔案名稱
-OUTPUT="interpreter"          # 最後的執行檔名稱
-# 定義執行檔與測試資料夾
-EXECUTABLE="./interpreter"
-TEST_DIR="./public_test_data"
+# Exit immediately if a command exits with a non-zero status.
+set -e
+# Treat unset variables as an error when substituting.
+set -u
+# Pipes fail if any command in the pipe fails (safer)
+set -o pipefail
 
-# Step 1: 檢查檔案是否存在
-if [ ! -f "$LEX_FILE" ]; then
-    echo "Error: Lex file '$LEX_FILE' does not exist!"
-    exit 1
-fi
+# --- Configuration ---
+LEX_FILE="scanner.l"          # Lex source file
+YACC_FILE="interpreter.y"     # Yacc source file (Corrected spelling)
+CPP_FILES="AST.cpp"           # Add other .cpp files if needed, space-separated
+OUTPUT_EXEC="interpreter"     # Name of the final executable (Corrected spelling)
+TEST_DIR="./public_test_data" # Directory containing test input (.lsp files)
+OUTPUT_DIR="./output"         # Directory to store test output (.out files)
+# Compiler and flags
+CXX="g++"
+# Remove -I.. if AST.h/y.tab.h are in the current directory
+INCLUDE_DIRS="" # Example: "-I../include" or leave empty ""
+CXXFLAGS="-g -Wall -Wextra ${INCLUDE_DIRS}" # Debug flags, add warnings
+LDFLAGS="-ll -lm"                           # Linker flags (libfl, libm)
 
-if [ ! -f "$YACC_FILE" ]; then
-    echo "Error: Yacc file '$YACC_FILE' does not exist!"
-    exit 1
-fi
+# --- Build Steps ---
 
-# Step 2: 清理舊檔案
+# 1. Check source files
+echo "Checking source files..."
+if [ ! -f "$LEX_FILE" ]; then echo "Error: Lex file '$LEX_FILE' not found!"; exit 1; fi
+if [ ! -f "$YACC_FILE" ]; then echo "Error: Yacc file '$YACC_FILE' not found!"; exit 1; fi
+# Add checks for CPP_FILES if needed
+
+# 2. Clean up old files
 echo "Cleaning up old files..."
-rm -f lex.yy.c y.tab.c y.tab.h y.tab.o lex.yy.o "$OUTPUT"
+rm -f lex.yy.c y.tab.c y.tab.h y.tab.o lex.yy.o ${CPP_FILES//.cpp/.o} "$OUTPUT_EXEC"
+rm -rf "$OUTPUT_DIR" # Remove old output directory
 
-# Step 3: 執行 Yacc
-echo "Running Yacc..."
-bison -d -o "y.tab.c" "$YACC_FILE"
-if [ $? -ne 0 ]; then
-    echo "Yacc encountered an error!"
-    exit 1
-fi
+# 3. Run Yacc (Bison)
+echo "Running Yacc (Bison)..."
+bison -d -o y.tab.c "$YACC_FILE"
 
-# Step 4: 編譯 Yacc 輸出
-echo "Compiling Yacc output..."
-g++ -c -g -I.. "y.tab.c"
-if [ $? -ne 0 ]; then
-    echo "Failed to compile Yacc output!"
-    exit 1
-fi
-
-# Step 5: 執行 Lex
-echo "Running Lex..."
+# 4. Run Lex (Flex)
+echo "Running Lex (Flex)..."
 flex -o lex.yy.c "$LEX_FILE"
-if [ $? -ne 0 ]; then
-    echo "Lex encountered an error!"
-    exit 1
-fi
 
-# Step 6: 編譯 Lex 輸出
-echo "Compiling Lex output..."
-g++ -c -g -I.. lex.yy.c
-if [ $? -ne 0 ]; then
-    echo "Failed to compile Lex output!"
-    exit 1
-fi
+# 5. Compile generated C/C++ files and user C++ files
+echo "Compiling generated files..."
+"$CXX" ${CXXFLAGS} -c -o y.tab.o y.tab.c
+"$CXX" ${CXXFLAGS} -c -o lex.yy.o lex.yy.c
+echo "Compiling C++ source files..."
+for cpp_file in $CPP_FILES; do
+    if [ ! -f "$cpp_file" ]; then echo "Error: C++ file '$cpp_file' not found!"; exit 1; fi
+    obj_file="${cpp_file//.cpp/.o}"
+    echo "Compiling $cpp_file -> $obj_file"
+    "$CXX" ${CXXFLAGS} -c -o "$obj_file" "$cpp_file"
+done
 
-# Step 7: 連結並生成執行檔
-echo "Linking and generating the executable..."
-g++ -g -o "$OUTPUT" y.tab.o lex.yy.o AST.cpp -ll -lm
-if [ $? -ne 0 ]; then
-    echo "Failed to link the executable!"
-    exit 1
-fi
+# 6. Link object files into the final executable
+echo "Linking..."
+OBJECT_FILES="y.tab.o lex.yy.o ${CPP_FILES//.cpp/.o}"
+"$CXX" ${CXXFLAGS} -o "$OUTPUT_EXEC" $OBJECT_FILES ${LDFLAGS}
 
-# 完成
-echo "Compilation completed successfully! Executable is '$OUTPUT'."
+echo "Build completed successfully! Executable is '$OUTPUT_EXEC'."
 
-# 檢查執行檔是否存在
-if [ ! -f "$EXECUTABLE" ]; then
-    echo "Error: Executable '$EXECUTABLE' not found."
-    exit 1
-fi
+# --- Testing Steps ---
 
-# 檢查測試資料夾是否存在
+# 7. Check for executable and test directory
+if [ ! -f "$OUTPUT_EXEC" ]; then echo "Error: Executable '$OUTPUT_EXEC' not found."; exit 1; fi
 if [ ! -d "$TEST_DIR" ]; then
-    echo "Error: Test directory '$TEST_DIR' not found."
-    exit 1
+    echo "Warning: Test directory '$TEST_DIR' not found. Skipping tests."
+    exit 0 # Exit gracefully if no tests
 fi
 
-# 建立輸出資料夾
+# 8. Create output directory
+echo "Creating output directory: $OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-# 遍歷所有 .lsp 檔案
-for file in "$TEST_DIR"/*.lsp; do
-    # 取得檔案名稱（不含路徑）
-    filename=$(basename "$file")
-    
-    # 執行執行檔並將結果寫入輸出檔案
-    echo "Running test: $filename"
-    "$EXECUTABLE" < "$file"
+# 9. Run tests
+echo "Running tests from $TEST_DIR..."
+for input_file in "$TEST_DIR"/*.lsp; do
+    if [ -f "$input_file" ]; then # Ensure it's a file
+        filename=$(basename "$input_file" .lsp) # Get name without .lsp extension
+        output_file="$OUTPUT_DIR/$filename.out"
+        echo "  Testing $filename: '$input_file' -> '$output_file'"
+        # Execute interpreter, redirect input from test file, redirect output to output file
+        "./$OUTPUT_EXEC" < "$input_file" > "$output_file"
+        # Optional: Check for errors during execution
+        if [ $? -ne 0 ]; then
+            echo "    ERROR: Interpreter exited with non-zero status for $filename!"
+            # Optionally remove the potentially incomplete output file: rm -f "$output_file"
+        fi
+    fi
 done
+
+echo "Testing finished. Output files are in '$OUTPUT_DIR'."
+
+exit 0
